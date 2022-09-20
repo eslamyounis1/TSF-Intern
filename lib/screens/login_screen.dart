@@ -1,8 +1,10 @@
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:tsf_intern/screens/user_info_screen.dart';
 import 'package:tsf_intern/shared/cubit/cubit.dart';
 import 'package:tsf_intern/shared/cubit/states.dart';
 
@@ -197,9 +199,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildSocialBtnRow() {
-    return BlocConsumer<LoginCubit,LoginStates>(
-      listener: (context,state){},
-      builder: (context,state){
+    return BlocConsumer<LoginCubit, LoginStates>(
+      listener: (context, state) {},
+      builder: (context, state) {
         var cubit = LoginCubit.get(context);
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 30.0),
@@ -208,24 +210,24 @@ class _LoginScreenState extends State<LoginScreen> {
             children: <Widget>[
               _buildSocialBtn(
                     () {
-                      cubit.signInWithFacebook().then((value) {
-                        print('facebook login successfully');
-                      }).catchError((error){
-                        print('error logging in with facebook error: $error');
-                      });
-                    },
+                  cubit.signInWithFacebook().then((value) {
+                    print('facebook login successfully');
+                  }).catchError((error) {
+                    print('error logging in with facebook error: $error');
+                  });
+                },
                 const AssetImage(
                   'assets/images/facebook.jpg',
                 ),
               ),
               _buildSocialBtn(
-                    (){
-                      cubit.loginWithGoogle().then((value) {
-                        // Fluttertoast.showToast(msg: 'Login successfully');
-                        print("login successfully");
-                      }).catchError((error){
-                        // Fluttertoast.showToast(msg: 'error logging in error: $error');
-                      });
+                    () {
+                  cubit.loginWithGoogle().then((value) {
+                    // Fluttertoast.showToast(msg: 'Login successfully');
+                    print("login successfully");
+                  }).catchError((error) {
+                    // Fluttertoast.showToast(msg: 'error logging in error: $error');
+                  });
                 },
                 const AssetImage(
                   'assets/images/google.jpg',
@@ -235,23 +237,22 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       },
-
     );
   }
 
   Widget _buildSignupBtn() {
-    return BlocConsumer<LoginCubit,LoginStates>(
-      listener: (context,state){},
-      builder: (context,state){
+    return BlocConsumer<LoginCubit, LoginStates>(
+      listener: (context, state) {},
+      builder: (context, state) {
         var cubit = LoginCubit.get(context);
         return GestureDetector(
-          onTap: (){
-            cubit.logout().then((value) {
-              print('logout successfully');
-            }).catchError((error){
-              print('error logging out error: $error');
-            });
-          } ,
+          onTap: () {
+            // cubit.logout().then((value) {
+            //   print('logout successfully');
+            // }).catchError((error) {
+            //   print('error logging out error: $error');
+            // });
+          },
           child: RichText(
             text: const TextSpan(
               children: [
@@ -276,17 +277,23 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       },
-
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context)=>LoginCubit(),
-      child: BlocConsumer<LoginCubit,LoginStates>(
-        listener: (context,state){},
-        builder: (context,state){
+      create: (context) => LoginCubit(),
+      child: BlocConsumer<LoginCubit, LoginStates>(
+        listener: (context, state) {
+          if (state is LoginSuccessState) {
+            Navigator.pushAndRemoveUntil(context,
+              MaterialPageRoute(builder: (context) => const UserInfoScreen()), (
+                  route) => false,);
+
+        }
+        },
+        builder: (context, state) {
           var cubit = LoginCubit.get(context);
           return Scaffold(
             body: AnnotatedRegion<SystemUiOverlayStyle>(
@@ -345,21 +352,28 @@ class _LoginScreenState extends State<LoginScreen> {
                             // _buildSocialBtnRow(),
                             Row(
                               children: [
-                                MaterialButton(onPressed: (){
-                                  cubit.loginWithGoogle().then((value) {
-
-                                    print("login successfully");
-                                  }).catchError((error){
-                                  });
-                                },child: const Text('google'),),
-                                 const SizedBox(width: 10.0,),
-                                MaterialButton(onPressed: (){
-                                  cubit.signInWithFacebook().then((value) {
-                                    print('facebook login successfully');
-                                  }).catchError((error){
-                                    print('error logging in with facebook error: $error');
-                                  });
-                                },child: const Text('facebook'),)
+                                MaterialButton(
+                                  onPressed: () {
+                                    cubit.loginWithGoogle().then((value) {
+                                      print("login successfully");
+                                    }).catchError((error) {});
+                                  },
+                                  child: const Text('google'),
+                                ),
+                                const SizedBox(
+                                  width: 10.0,
+                                ),
+                                MaterialButton(
+                                  onPressed: () {
+                                    cubit.signInWithFacebook().then((value) {
+                                      print('facebook login successfully');
+                                    }).catchError((error) {
+                                      print(
+                                          'error logging in with facebook error: $error');
+                                    });
+                                  },
+                                  child: const Text('facebook'),
+                                )
                               ],
                             ),
                             _buildSignupBtn(),
@@ -373,7 +387,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
         },
-
       ),
     );
   }
