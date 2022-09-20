@@ -1,6 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:tsf_intern/shared/cubit/cubit.dart';
+import 'package:tsf_intern/shared/cubit/states.dart';
 
 import '../constants.dart';
 
@@ -16,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
+        const Text(
           'Email',
           style: kLabelStyle,
         ),
@@ -25,16 +29,16 @@ class _LoginScreenState extends State<LoginScreen> {
           alignment: Alignment.centerLeft,
           decoration: kBoxDecorationStyle,
           height: 60.0,
-          child: TextField(
+          child: const TextField(
             keyboardType: TextInputType.emailAddress,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontFamily: 'OpenSans',
             ),
             decoration: InputDecoration(
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.only(top: 14.0),
-              prefixIcon: const Icon(
+              contentPadding: EdgeInsets.only(top: 14.0),
+              prefixIcon: Icon(
                 Icons.email,
                 color: Colors.white,
               ),
@@ -50,8 +54,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildPasswordTF() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
+      children: [
+        const Text(
           'Password',
           style: kLabelStyle,
         ),
@@ -60,16 +64,16 @@ class _LoginScreenState extends State<LoginScreen> {
           alignment: Alignment.centerLeft,
           decoration: kBoxDecorationStyle,
           height: 60.0,
-          child: TextField(
+          child: const TextField(
             obscureText: true,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontFamily: 'OpenSans',
             ),
             decoration: InputDecoration(
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.only(top: 14.0),
-              prefixIcon: const Icon(
+              contentPadding: EdgeInsets.only(top: 14.0),
+              prefixIcon: Icon(
                 Icons.lock,
                 color: Colors.white,
               ),
@@ -88,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
       padding: const EdgeInsets.only(right: 0.0),
       child: TextButton(
         onPressed: () => print('Forgot Password Button Pressed'),
-        child: Text(
+        child: const Text(
           'Forgot Password?',
           style: kLabelStyle,
         ),
@@ -114,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
               },
             ),
           ),
-          Text(
+          const Text(
             'Remember me',
             style: kLabelStyle,
           ),
@@ -193,121 +197,183 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildSocialBtnRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 30.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          _buildSocialBtn(
-            () => print('Login with Facebook'),
-            const AssetImage(
-              'assets/images/facebook.jpg',
-            ),
+    return BlocConsumer<LoginCubit,LoginStates>(
+      listener: (context,state){},
+      builder: (context,state){
+        var cubit = LoginCubit.get(context);
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 30.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              _buildSocialBtn(
+                    () {
+                      cubit.signInWithFacebook().then((value) {
+                        print('facebook login successfully');
+                      }).catchError((error){
+                        print('error logging in with facebook error: $error');
+                      });
+                    },
+                const AssetImage(
+                  'assets/images/facebook.jpg',
+                ),
+              ),
+              _buildSocialBtn(
+                    (){
+                      cubit.loginWithGoogle().then((value) {
+                        // Fluttertoast.showToast(msg: 'Login successfully');
+                        print("login successfully");
+                      }).catchError((error){
+                        // Fluttertoast.showToast(msg: 'error logging in error: $error');
+                      });
+                },
+                const AssetImage(
+                  'assets/images/google.jpg',
+                ),
+              ),
+            ],
           ),
-          _buildSocialBtn(
-            () => print('Login with Google'),
-            const AssetImage(
-              'assets/images/google.jpg',
-            ),
-          ),
-        ],
-      ),
+        );
+      },
+
     );
   }
 
   Widget _buildSignupBtn() {
-    return GestureDetector(
-      onTap: () => print('Sign Up Button Pressed'),
-      child: RichText(
-        text: const TextSpan(
-          children: [
-            TextSpan(
-              text: 'Don\'t have an Account? ',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.0,
-                fontWeight: FontWeight.w400,
-              ),
+    return BlocConsumer<LoginCubit,LoginStates>(
+      listener: (context,state){},
+      builder: (context,state){
+        var cubit = LoginCubit.get(context);
+        return GestureDetector(
+          onTap: (){
+            cubit.logout().then((value) {
+              print('logout successfully');
+            }).catchError((error){
+              print('error logging out error: $error');
+            });
+          } ,
+          child: RichText(
+            text: const TextSpan(
+              children: [
+                TextSpan(
+                  text: 'Don\'t have an Account? ',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                TextSpan(
+                  text: 'Sign Up',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            TextSpan(
-              text: 'Sign Up',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
+
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light,
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: Stack(
-            children: <Widget>[
-              Container(
-                height: double.infinity,
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFF73AEF5),
-                      Color(0xFF61A4F1),
-                      Color(0xFF478DE0),
-                      Color(0xFF398AE5),
-                    ],
-                    stops: [0.1, 0.4, 0.7, 0.9],
-                  ),
-                ),
-              ),
-              Container(
-                height: double.infinity,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40.0,
-                    vertical: 120.0,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      const Text(
-                        'Sign In',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'OpenSans',
-                          fontSize: 30.0,
-                          fontWeight: FontWeight.bold,
+    return BlocProvider(
+      create: (context)=>LoginCubit(),
+      child: BlocConsumer<LoginCubit,LoginStates>(
+        listener: (context,state){},
+        builder: (context,state){
+          var cubit = LoginCubit.get(context);
+          return Scaffold(
+            body: AnnotatedRegion<SystemUiOverlayStyle>(
+              value: SystemUiOverlayStyle.light,
+              child: GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: Stack(
+                  children: <Widget>[
+                    Container(
+                      height: double.infinity,
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Color(0xFF73AEF5),
+                            Color(0xFF61A4F1),
+                            Color(0xFF478DE0),
+                            Color(0xFF398AE5),
+                          ],
+                          stops: [0.1, 0.4, 0.7, 0.9],
                         ),
                       ),
-                      const SizedBox(height: 30.0),
-                      _buildEmailTF(),
-                      const SizedBox(
-                        height: 30.0,
+                    ),
+                    Container(
+                      height: double.infinity,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 40.0,
+                          vertical: 120.0,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            const Text(
+                              'Sign In',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'OpenSans',
+                                fontSize: 30.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 30.0),
+                            _buildEmailTF(),
+                            const SizedBox(
+                              height: 30.0,
+                            ),
+                            _buildPasswordTF(),
+                            _buildForgotPasswordBtn(),
+                            _buildRememberMeCheckbox(),
+                            _buildLoginBtn(),
+                            _buildSignInWithText(),
+                            // _buildSocialBtnRow(),
+                            Row(
+                              children: [
+                                MaterialButton(onPressed: (){
+                                  cubit.loginWithGoogle().then((value) {
+
+                                    print("login successfully");
+                                  }).catchError((error){
+                                  });
+                                },child: const Text('google'),),
+                                 const SizedBox(width: 10.0,),
+                                MaterialButton(onPressed: (){
+                                  cubit.signInWithFacebook().then((value) {
+                                    print('facebook login successfully');
+                                  }).catchError((error){
+                                    print('error logging in with facebook error: $error');
+                                  });
+                                },child: const Text('facebook'),)
+                              ],
+                            ),
+                            _buildSignupBtn(),
+                          ],
+                        ),
                       ),
-                      _buildPasswordTF(),
-                      _buildForgotPasswordBtn(),
-                      _buildRememberMeCheckbox(),
-                      _buildLoginBtn(),
-                      _buildSignInWithText(),
-                      _buildSocialBtnRow(),
-                      _buildSignupBtn(),
-                    ],
-                  ),
+                    )
+                  ],
                 ),
-              )
-            ],
-          ),
-        ),
+              ),
+            ),
+          );
+        },
+
       ),
     );
   }
