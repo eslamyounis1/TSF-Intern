@@ -1,30 +1,25 @@
+import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tsf_intern/model/user_model.dart';
 import 'package:tsf_intern/screens/login_screen.dart';
 import 'package:tsf_intern/shared/cubit/cubit.dart';
 import 'package:tsf_intern/shared/cubit/states.dart';
 
-class UserInfoScreen extends StatelessWidget {
-  const UserInfoScreen({Key? key}) : super(key: key);
+class GoogleUserInfoScreen extends StatelessWidget {
+  const GoogleUserInfoScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => LoginCubit(),
       child: BlocConsumer<LoginCubit, LoginStates>(
-        listener: (context, state) {
-          if (state is LogoutSuccessState) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => LoginScreen()),
-              (route) => false,
-            );
-          }
-        },
+        listener: (context, state) {},
         builder: (context, state) {
           var cubit = LoginCubit.get(context);
           final user = cubit.user;
+
           return Scaffold(
             appBar: AppBar(
               title: const Text('User Info'),
@@ -32,7 +27,16 @@ class UserInfoScreen extends StatelessWidget {
               actions: [
                 IconButton(
                   onPressed: () {
-                    cubit.logout().then((value) {}).catchError((error) {});
+                    cubit.logout().then((value) {
+                      print('logout successfully');
+                    }).catchError((error) {
+                      print('error: ${error.toString()}');
+                    });
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                      (route) => false,
+                    );
                   },
                   icon: const Icon(Icons.logout),
                 ),
@@ -41,8 +45,14 @@ class UserInfoScreen extends StatelessWidget {
             body: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(user.email!),
-                Text(user.displayName!),
+                ListTile(
+                  leading: CircleAvatar(
+                    radius: 30.0,
+                    backgroundImage: NetworkImage(user.photoURL!),
+                  ),
+                  title: Text(user.displayName!),
+                  subtitle: Text(user.email!),
+                ),
               ],
             ),
           );

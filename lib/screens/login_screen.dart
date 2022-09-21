@@ -1,14 +1,14 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:tsf_intern/screens/user_info_screen.dart';
+import 'package:tsf_intern/screens/facebook_user_info_screen.dart';
 import 'package:tsf_intern/shared/cubit/cubit.dart';
 import 'package:tsf_intern/shared/cubit/states.dart';
 
 import '../constants.dart';
+import 'google_user_info_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -175,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildSocialBtn(Function onTap, AssetImage logo) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap(),
       child: Container(
         height: 60.0,
@@ -209,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               _buildSocialBtn(
-                    () {
+                () {
                   cubit.signInWithFacebook().then((value) {
                     print('facebook login successfully');
                   }).catchError((error) {
@@ -221,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               _buildSocialBtn(
-                    () {
+                () {
                   cubit.loginWithGoogle().then((value) {
                     // Fluttertoast.showToast(msg: 'Login successfully');
                     print("login successfully");
@@ -286,12 +286,20 @@ class _LoginScreenState extends State<LoginScreen> {
       create: (context) => LoginCubit(),
       child: BlocConsumer<LoginCubit, LoginStates>(
         listener: (context, state) {
-          if (state is LoginSuccessState) {
-            Navigator.pushAndRemoveUntil(context,
-              MaterialPageRoute(builder: (context) => const UserInfoScreen()), (
-                  route) => false,);
-
-        }
+          if (state is LoginFacebookSuccessState) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const UserInfoScreen()),
+              (route) => false,
+            );
+          }
+          if (state is LoginGoogleSuccessState) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) =>  const GoogleUserInfoScreen()),
+              (route) => false,
+            );
+          }
         },
         builder: (context, state) {
           var cubit = LoginCubit.get(context);
@@ -349,32 +357,107 @@ class _LoginScreenState extends State<LoginScreen> {
                             _buildRememberMeCheckbox(),
                             _buildLoginBtn(),
                             _buildSignInWithText(),
+                            const SizedBox(
+                              height: 20.0,
+                            ),
                             // _buildSocialBtnRow(),
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                MaterialButton(
-                                  onPressed: () {
-                                    cubit.loginWithGoogle().then((value) {
-                                      print("login successfully");
-                                    }).catchError((error) {});
-                                  },
-                                  child: const Text('google'),
+                                // MaterialButton(
+                                //   onPressed: () {
+                                //     cubit.loginWithGoogle().then((value) {
+                                //       print("login successfully");
+                                //     }).catchError((error) {});
+                                //   },
+                                //   child: const Text('google'),
+                                // ),
+                                // const SizedBox(
+                                //   width: 10.0,
+                                // ),
+                                // MaterialButton(
+                                //   onPressed: () {
+                                //     cubit.signInWithFacebook().then((value) {
+                                //       print('facebook login successfully');
+                                //     }).catchError((error) {
+                                //       print(
+                                //           'error logging in with facebook error: $error');
+                                //     });
+                                //   },
+                                //   child: const Text('facebook'),
+                                // ),
+                                Row(
+                                  children: [
+                                    InkWell(
+                                      child: Container(
+                                        height: 50.0,
+                                        width: 50.0,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black26,
+                                              offset: Offset(0, 2),
+                                              blurRadius: 6.0,
+                                            ),
+                                          ],
+                                          image: DecorationImage(
+                                            image: AssetImage(
+                                                'assets/images/google.jpg'),
+                                          ),
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        cubit.loginWithGoogle().then((value) {
+                                          print("login successfully");
+                                        }).catchError((error) {});
+                                      },
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(
-                                  width: 10.0,
+                                  width: 20.0,
                                 ),
-                                MaterialButton(
-                                  onPressed: () {
-                                    cubit.signInWithFacebook().then((value) {
-                                      print('facebook login successfully');
-                                    }).catchError((error) {
-                                      print(
-                                          'error logging in with facebook error: $error');
-                                    });
-                                  },
-                                  child: const Text('facebook'),
-                                )
+                                Row(
+                                  children: [
+                                    InkWell(
+                                      child: Container(
+                                        height: 50.0,
+                                        width: 50.0,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black26,
+                                              offset: Offset(0, 2),
+                                              blurRadius: 6.0,
+                                            ),
+                                          ],
+                                          image: DecorationImage(
+                                            image: AssetImage(
+                                                'assets/images/facebook.jpg'),
+                                          ),
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        cubit
+                                            .signInWithFacebook()
+                                            .then((value) {
+                                          print('facebook login successfully');
+                                        }).catchError((error) {
+                                          print(
+                                              'error logging in with facebook error: $error');
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ],
+                            ),
+                            const SizedBox(
+                              height: 20.0,
                             ),
                             _buildSignupBtn(),
                           ],

@@ -2,8 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:tsf_intern/model/user_model.dart';
 import 'package:tsf_intern/shared/cubit/states.dart';
 
 class LoginCubit extends Cubit<LoginStates> {
@@ -16,10 +16,13 @@ class LoginCubit extends Cubit<LoginStates> {
 
   User get user => _firebaseAuth.currentUser!;
 
+  UserModel? currentUser;
+  AccessToken? accessToken;
+
   // Users Login via Google third_party provider
   Future<String?> loginWithGoogle() async {
     try {
-      emit(LoginLoadingState());
+      emit(LoginGoogleLoadingState());
       final GoogleSignInAccount? googleSignInAccount =
           await googleSignIn.signIn();
       final GoogleSignInAuthentication googleSignInAuthentication =
@@ -32,44 +35,57 @@ class LoginCubit extends Cubit<LoginStates> {
           await _firebaseAuth.signInWithCredential(authCredential);
       final User? user = authResult.user;
       if (user != null) {
-        emit(LoginSuccessState());
+        emit(LoginGoogleSuccessState());
         return '$user';
       }
-
     } on FirebaseAuthException catch (error) {
-      emit(LoginErrorState(error.toString()));
+      emit(LoginGoogleErrorState(error.toString()));
     }
     return null;
   }
 
   // Users Login via Facebook third_party provider
   Future<UserCredential?> signInWithFacebook() async {
-    emit(LoginLoadingState());
+    emit(LoginFacebookLoadingState());
     final LoginResult result = await FacebookAuth.instance.login();
+
     if (result.status == LoginStatus.success) {
       // Create a credential from the access token
       final OAuthCredential credential =
           FacebookAuthProvider.credential(result.accessToken!.token);
+
+      emit(LoginFacebookSuccessState());
       // Once signed in, return the UserCredential
-      emit(LoginSuccessState());
       return await FirebaseAuth.instance.signInWithCredential(credential);
     } else if (result.status == LoginStatus.failed) {
-      emit(LoginErrorState(LoginStatus.failed.toString()));
+      emit(LoginFacebookErrorState(LoginStatus.failed.toString()));
     }
 
     return null;
   }
 
-  // get user Info
+  Future<void> getUserInfo() async {
+    // accessToken = result.accessToken;
+    final data = await FacebookAuth.i.getUserData();
 
+    UserModel model = UserModel.fromJson(data);
+
+    currentUser = model;
+
+    emit(LoginGetFacebookUserInfoState());
+  }
 
   Future<bool> logout() async {
     try {
+      emit(LogoutLoadingState());
       googleSignIn.disconnect();
-      await FacebookAuth.instance.logOut();
+      FacebookAuth.instance.logOut();
+      currentUser = null;
+      accessToken = null;
+
       emit(LogoutSuccessState());
       return true;
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
       emit(LogoutErrorState(e.toString()));
       return false;
     }
