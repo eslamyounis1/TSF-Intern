@@ -3,8 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:tsf_intern/model/user_model.dart';
 import 'package:tsf_intern/shared/cubit/states.dart';
+
+import '../../models/user_model.dart';
 
 class LoginCubit extends Cubit<LoginStates> {
   LoginCubit() : super(LoginInitialState());
@@ -64,8 +65,9 @@ class LoginCubit extends Cubit<LoginStates> {
     return null;
   }
 
+  // get facebook user data
   Future<void> getUserInfo() async {
-    // accessToken = result.accessToken;
+
     final data = await FacebookAuth.i.getUserData();
 
     UserModel model = UserModel.fromJson(data);
@@ -73,6 +75,34 @@ class LoginCubit extends Cubit<LoginStates> {
     currentUser = model;
 
     emit(LoginGetFacebookUserInfoState());
+  }
+
+  Future<String?> createUser(String email,String password)async{
+    try{
+      emit(LoginCreateEmailAndPasswordLoadingState());
+      UserCredential credential  = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+      emit(LoginCreateEmailAndPasswordSuccessState());
+
+      return credential.user!.uid;
+    }on FirebaseAuthException catch(e){
+      emit(LoginCreateEmailAndPasswordErrorState(e.toString()));
+
+      return null;
+    }
+
+  }
+  Future<String?> login(String email, String password)async{
+    try{
+      emit(LoginWithEmailAndPasswordLoadingState());
+      UserCredential credential = await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+      emit(LoginWithEmailAndPasswordSuccessState());
+
+      return credential.user!.uid;
+    }on FirebaseAuthException catch(e){
+      emit(LoginWithEmailAndPasswordErrorState(e.toString()));
+
+      return null;
+    }
   }
 
   Future<bool> logout() async {
